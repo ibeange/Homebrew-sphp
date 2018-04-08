@@ -2,7 +2,6 @@
 # Creator: Phil Cook
 # Email: phil@phil-cook.com
 # Twitter: @p_cook
-# @modified Andy Miller - Homebrew/core compatibility
 brew_prefix=$(brew --prefix | sed 's#/#\\\/#g')
 
 brew_array=("5.6","7.0","7.1","7.2")
@@ -145,7 +144,6 @@ $comment_apache_module_string\\
 			sudo sed -i.bak "s/\#LoadModule $php_module $apache_php_mod_path/LoadModule $php_module $apache_php_mod_path/g" $apache_conf_path
 			echo "Restarting apache"
 			sudo apachectl restart
-			php -v
 		fi
 
 
@@ -157,6 +155,10 @@ $comment_apache_module_string\\
                echo "valet doesn't installed in your system, will skip restarting valet service";
             fi
         fi
+
+        echo ""
+        php -v
+        echo ""
 
 		echo "All done!"
 	else
