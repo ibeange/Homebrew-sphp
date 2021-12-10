@@ -6,14 +6,14 @@ osx_minor_version=$(sw_vers -productVersion | cut -d. -f2)
 osx_patch_version=$(sw_vers -productVersion | cut -d. -f3)
 osx_patch_version=${osx_patch_version:-0}
 osx_version=$((${osx_major_version} * 10000 + ${osx_minor_version} * 100 + ${osx_patch_version}))
+homebrew_path=$(brew --prefix)
+brew_prefix=$(brew --prefix | sed 's#/#\\\/#g')
 
-abrew_prefix=$(abrew --prefix | sed 's#/#\\\/#g')
-
-abrew_array=("5.6","7.0","7.1","7.2","7.3","7.4","8.0")
-php_array=("php@5.6" "php@7.0" "php@7.1" "php@7.2" "php@7.3" "php@7.4" "php@8.0")
+brew_array=("5.6","7.0","7.1","7.2","7.3","7.4","8.0"，"8.1","8.2")
+php_array=("php@5.6" "php@7.0" "php@7.1" "php@7.2" "php@7.3" "php@7.4" "php@8.0" "php@8.1" "php@8.2")
 php_installed_array=()
 php_version="php@$1"
-php_opt_path="$abrew_prefix\/opt\/"
+php_opt_path="$brew_prefix\/opt\/"
 
 php5_module="php5_module"
 apache_php5_lib_path="\/lib\/httpd\/modules\/libphp5.so"
@@ -31,7 +31,7 @@ fi
 if [[ -z "$1" ]]; then
     echo "usage: sphp version [-s|-s=*] [-c=*]"
     echo
-    echo "    version    one of:" ${abrew_array[@]}
+    echo "    version    one of:" ${brew_array[@]}
     echo
     exit
 fi
@@ -49,13 +49,13 @@ elif [[ simple_php_version -ge 80 ]]; then
 fi
 
 apache_change=1
-apache_conf_path="/opt/homeabrew/etc/httpd/httpd.conf"
+apache_conf_path="$homebrew_path/etc/httpd/httpd.conf"
 apache_php_mod_path="$php_opt_path$php_version$apache_php_lib_path"
 
-# What versions of php are installed via abrew
+# What versions of php are installed via brew
 for i in ${php_array[*]}; do
     version=$(echo "$i" | sed 's/^php@//')
-    if [[ -d "/opt/homeabrew/etc/php/$version" ]]; then
+    if [[ -d "$homebrew_path/etc/php/$version" ]]; then
         php_installed_array+=("$i")
     fi
 done
@@ -69,9 +69,9 @@ if [[ " ${php_array[*]} " == *"$php_version"* ]]; then
         echo "Switching to $php_version"
         echo "Switching your shell"
         for i in ${php_installed_array[@]}; do
-            abrew unlink $i
+            brew unlink $i
         done
-        abrew link --force "$php_version"
+        brew link --force "$php_version"
 
         # Switch apache
         if [[ $apache_change -eq 1 ]]; then
@@ -106,8 +106,8 @@ $comment_apache_module_string\\
             done
             sed -i.bak "s/\#LoadModule $php_module $apache_php_mod_path/LoadModule $php_module $apache_php_mod_path/g" $apache_conf_path
             echo "Restarting apache"
-            abrew services stop httpd
-            abrew services start httpd
+            brew services stop httpd
+            brew services start httpd
         fi
 
 	echo ""
@@ -116,8 +116,8 @@ $comment_apache_module_string\\
 
         echo "All done!"
     else
-        echo "Sorry, but $php_version is not installed via abrew. Install by running: abrew install $php_version"
+        echo "Sorry, but $php_version is not installed via brew. Install by running: brew install $php_version"
     fi
 else
-    echo "Unknown version of PHP. PHP Switcher can only handle arguments of:" ${abrew_array[@]}
+    echo "Unknown version of PHP. PHP Switcher can only handle arguments of:" ${brew_array[@]}
 fi
